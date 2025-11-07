@@ -5,12 +5,12 @@ from PIL import Image, ImageTk, ImageDraw
 import json
 from datetime import datetime
 
-from config.regions_definitions import get_regions_for_site, get_sorted_regions
-from config.ui.toolbar import ToolbarManager
-from config.ui.canvas import CanvasManager
-from config.ui.regions_panel import RegionsPanelManager
-from config.core.template_data import TemplateDataManager
-from config.core.region_selector import RegionSelectorManager
+from app.config.regions_definitions import get_regions_for_site, get_sorted_regions
+from app.config.ui.toolbar import ToolbarManager
+from app.config.ui.canvas import CanvasManager
+from app.config.ui.regions_panel import RegionsPanelManager
+from app.config.core.template_data import TemplateDataManager
+from app.config.core.region_selector import RegionSelectorManager
 
 class TemplateConfigurator:
     def __init__(self, parent, image_path, poker_site, existing_template=None):
