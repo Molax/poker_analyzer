@@ -66,13 +66,19 @@ class PokerAnalyzerUI:
         buttons_frame = ttk.Frame(controls_frame)
         buttons_frame.pack(fill=tk.X)
         
-        self.upload_btn = ttk.Button(buttons_frame, text="1. Upload Poker Image", 
+        self.upload_btn = ttk.Button(buttons_frame, text="1. Upload Poker Image",
                                     command=self.upload_image, width=25)
         self.upload_btn.pack(side=tk.LEFT, padx=(0, 10))
         ToolTip(self.upload_btn, "Upload a poker screenshot\nFilename should contain site name: image_yaya.png")
-        
-        self.configure_btn = ttk.Button(buttons_frame, text="2. Configure Template", 
-                                       command=self.configure_template, 
+
+        self.select_template_btn = ttk.Button(buttons_frame, text="Select Template",
+                                             command=self.select_template,
+                                             width=20)
+        self.select_template_btn.pack(side=tk.LEFT, padx=(0, 10))
+        ToolTip(self.select_template_btn, "Choose from existing saved templates\nUse saved templates with any image")
+
+        self.configure_btn = ttk.Button(buttons_frame, text="2. Configure Template",
+                                       command=self.configure_template,
                                        state=tk.DISABLED, width=25)
         self.configure_btn.pack(side=tk.LEFT, padx=(0, 10))
         ToolTip(self.configure_btn, "Define regions to extract text from\nClick and drag to select areas")
@@ -264,21 +270,21 @@ class PokerAnalyzerUI:
         if not self.current_image_path:
             messagebox.showwarning("Warning", "Please upload an image first")
             return
-            
+
         if self.poker_site not in self.templates:
             messagebox.showwarning("Warning", "No template exists for this site")
             return
-            
+
         self.log_message(f"✏️ Opening template editor for {self.poker_site}...")
-        
+
         configurator = self.config_class(
-            self.root, 
-            self.current_image_path, 
-            self.poker_site, 
+            self.root,
+            self.current_image_path,
+            self.poker_site,
             existing_template=self.templates[self.poker_site]
         )
         self.root.wait_window(configurator.window)
-        
+
         if configurator.template_saved:
             self.load_existing_templates()
             self.check_template_status()
@@ -286,7 +292,94 @@ class PokerAnalyzerUI:
             self.log_message(f"✓ Template updated for {self.poker_site}")
         else:
             self.log_message("Template editing cancelled")
-            
+
+    def select_template(self):
+        if not self.templates:
+            messagebox.showinfo("No Templates",
+                "No templates found. Please create a template first by uploading an image and configuring regions.")
+            return
+
+        dialog = tk.Toplevel(self.root)
+        dialog.title("Select Template")
+        dialog.geometry("600x400")
+        dialog.transient(self.root)
+        dialog.grab_set()
+
+        main_frame = ttk.Frame(dialog, padding=15)
+        main_frame.pack(fill=tk.BOTH, expand=True)
+
+        ttk.Label(main_frame, text="Select a Template",
+                 font=('Arial', 14, 'bold')).pack(pady=(0, 15))
+
+        list_frame = ttk.Frame(main_frame)
+        list_frame.pack(fill=tk.BOTH, expand=True, pady=(0, 15))
+
+        scrollbar = ttk.Scrollbar(list_frame)
+        scrollbar.pack(side=tk.RIGHT, fill=tk.Y)
+
+        template_listbox = tk.Listbox(list_frame, yscrollcommand=scrollbar.set,
+                                     font=('Consolas', 10), height=15)
+        template_listbox.pack(side=tk.LEFT, fill=tk.BOTH, expand=True)
+        scrollbar.config(command=template_listbox.yview)
+
+        template_keys = []
+        for site, template in self.templates.items():
+            region_count = len(template.get('regions', {}))
+            player_count = template.get('player_count', '')
+            created = template.get('created', 'Unknown date')[:10]
+
+            if player_count:
+                display_text = f"{site.upper():15} | {player_count}p | {region_count} regions | Created: {created}"
+            else:
+                display_text = f"{site.upper():15} | {region_count} regions | Created: {created}"
+
+            template_listbox.insert(tk.END, display_text)
+            template_keys.append(site)
+
+        info_label = ttk.Label(main_frame,
+            text="Select a template to use with your current or next image",
+            foreground='gray')
+        info_label.pack(pady=(0, 10))
+
+        selected_site = [None]
+
+        def on_select():
+            selection = template_listbox.curselection()
+            if not selection:
+                messagebox.showwarning("No Selection", "Please select a template")
+                return
+
+            selected_site[0] = template_keys[selection[0]]
+            dialog.destroy()
+
+        def on_double_click(event):
+            on_select()
+
+        template_listbox.bind('<Double-Button-1>', on_double_click)
+
+        buttons_frame = ttk.Frame(main_frame)
+        buttons_frame.pack(fill=tk.X)
+
+        ttk.Button(buttons_frame, text="Select", command=on_select, width=15).pack(side=tk.LEFT, padx=(0, 10))
+        ttk.Button(buttons_frame, text="Cancel", command=dialog.destroy, width=15).pack(side=tk.LEFT)
+
+        dialog.wait_window()
+
+        if selected_site[0]:
+            self.poker_site = selected_site[0]
+            self.site_label.config(text=self.poker_site.upper())
+            self.log_message(f"✓ Selected template: {self.poker_site.upper()}")
+
+            self.check_template_status()
+            self.update_ui_state()
+
+            if self.current_image_path:
+                self.log_message("✓ Template loaded - You can now analyze the current image")
+                if self.analysis_engine:
+                    self.analyze_btn.config(state=tk.NORMAL)
+            else:
+                self.log_message("✓ Template selected - Upload an image to begin analysis")
+
     def analyze_image(self):
         if not self.current_image_path:
             messagebox.showwarning("Warning", "Please upload an image first")
