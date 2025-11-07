@@ -14,9 +14,9 @@ except ImportError as e:
     OCR_AVAILABLE = False
     PokerAnalysisEngine = None
 
-from config.ui.poker_analyzer_ui import PokerAnalyzerUI
-from config.ui.results_viewer import ResultsViewer
-from config.ui.results_browser import ResultsBrowser
+from ui.poker_analyzer_ui import PokerAnalyzerUI
+from ui.results_viewer import ResultsViewer
+from ui.results_browser import ResultsBrowser
 
 class PokeAnalyzer:
     def __init__(self):
