@@ -6,7 +6,7 @@ import yaml
 import json
 from datetime import datetime
 
-from regions.utils.tooltip import ToolTip
+from app.regions.utils.tooltip import ToolTip
 
 class PokerAnalyzerUI:
     def __init__(self, root, ocr_available, analysis_engine, config_class, results_viewer_class, results_browser_class):
