@@ -1,22 +1,22 @@
 import tkinter as tk
 from datetime import datetime
 
-from config.template_configurator import TemplateConfigurator
+from app.config.template_configurator import TemplateConfigurator
 
 try:
     import cv2
     import numpy as np
     import pytesseract
     import easyocr
-    from ocr.analysis_engine import PokerAnalysisEngine
+    from app.ocr.analysis_engine import PokerAnalysisEngine
     OCR_AVAILABLE = True
 except ImportError as e:
     OCR_AVAILABLE = False
     PokerAnalysisEngine = None
 
-from ui.poker_analyzer_ui import PokerAnalyzerUI
-from ui.results_viewer import ResultsViewer
-from ui.results_browser import ResultsBrowser
+from app.config.ui.poker_analyzer_ui import PokerAnalyzerUI
+from app.config.ui.results_viewer import ResultsViewer
+from app.config.ui.results_browser import ResultsBrowser
 
 class PokeAnalyzer:
     def __init__(self):
