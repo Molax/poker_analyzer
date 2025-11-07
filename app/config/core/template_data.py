@@ -8,7 +8,7 @@ Author: PokerAnalyzer Team
 """
 
 from datetime import datetime
-from app.config.regions_definitions import get_regions_for_site, get_sorted_regions
+from ..regions_definitions import get_regions_for_site, get_sorted_regions
 
 
 class TemplateDataManager:
